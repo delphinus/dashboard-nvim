@@ -165,6 +165,12 @@ function db:cache_opts()
     self.opts.config.footer = dump
   end
 
+  if self.opts.config.mru.list_fn and type(self.opts.config.mru.list_fn) == 'function' then
+    ---@diagnostic disable-next-line: param-type-mismatch
+    local dump = assert(string.dump(self.opts.config.mru.list_fn))
+    self.opts.config.mru.list_fn = dump
+  end
+
   local dump = vim.json.encode(self.opts)
   uv.fs_open(path, 'w+', tonumber('664', 8), function(err, fd)
     assert(not err, err)
