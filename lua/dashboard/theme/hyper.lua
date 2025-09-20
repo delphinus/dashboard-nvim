@@ -164,6 +164,7 @@ local function mru_list(config)
     icon_hl = 'DashboardMruIcon',
     label = ' Most Recent Files:',
     cwd_only = false,
+    list_fn = nil,
   }, config.mru or {})
 
   local list = {
@@ -171,7 +172,10 @@ local function mru_list(config)
   }
 
   local groups = {}
-  local mlist = utils.get_mru_list()
+  local list_fn = (function(c)
+    return (type(c) == 'function' and c) or (type(c) == 'string' and loadstring(c))
+  end)(config.mru.list_fn)
+  local mlist = list_fn and list_fn() or utils.get_mru_list()
 
   if config.mru.cwd_only then
     local cwd = uv.cwd()
