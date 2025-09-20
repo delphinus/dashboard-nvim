@@ -118,6 +118,7 @@ local function project_list(config, callback)
     icon_hl = 'DashboardRecentProjectIcon',
     action = 'Telescope find_files cwd=',
     label = ' Recent Projects:',
+    ignore_patterns = {},
   }, config.project or {})
 
   local function read_project(data)
@@ -126,7 +127,15 @@ local function project_list(config, callback)
     local dump = assert(loadstring(data))
     local list = dump()
     if list then
-      list = vim.list_slice(list, #list - config.project.limit)
+      local it = vim.iter(list)
+      if #config.project.ignore_patterns > 0 then
+        it = it:filter(function(dir)
+          return not vim.iter(ipairs(config.project.ignore_patterns)):any(function(_, pattern)
+            return dir:match(pattern)
+          end)
+        end)
+      end
+      list = it:slice(#list - config.project.limit + 1, #list):totable()
     end
     for _, dir in ipairs(list or {}) do
       dir = dir:gsub(vim.env.HOME, '~')
